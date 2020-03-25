@@ -88,11 +88,13 @@ Warped image:
 
 #### 4. Detect lane pixels and fit to find the lane boundary.
 
-The code for this step is contained in the fifth code cell of the IPython notebook located in "CarND-Advanced-Lane-Lines.ipynb" in functions `find_lane_pixels` and `fit_polynomial`.
+The code for this step is contained in the fifth code cell of the IPython notebook located in "CarND-Advanced-Lane-Lines.ipynb" in functions `find_lane_pixels`, `fit_polynomial` and `search_around_poly`.
 
 The `find_lane_pixels` function is taking histogram of the bottom half of the image detect peaks of the left and right halves and then move upward in the image saving x and y positions of the found lines.
 
-The `fit_polynomial` function is taking left and right x and y coordinates to fit a polynomial and discover the lane boundaries. The sunction also paints the left lane boundary red, right boundary blue and discovered lane yellow.
+The `fit_polynomial` function is taking left and right x and y coordinates to fit a polynomial and discover the lane boundaries. The sunction also paints the left lane boundary red, right boundary blue and discovered lane yellow. 5 last found fits are stored in `left_fits` and `right_fits`, but only if current for is not widly different from the mean of already stored 5.
+
+The `search_around_poly` function is used when the polynomial fit has been found at least once to not waste resources in running `find_lane_pixels` again. It uses a mean of fits stored in `left_fits` and `right_fits`.
 
 Warped image:
 
@@ -106,7 +108,7 @@ Warped image with lane marked:
 
 The code for this step is contained in the sixth code cell of the IPython notebook located in "CarND-Advanced-Lane-Lines.ipynb" in functions `curvature_and_offset`.
 
-The function transforms pixel to meters using `30/720` for y dimension and `3.7/700` for x. Using the new points it fits a polynomial and uses the A, B, and C values to calculate left and right radius of curvature. The offset is calculated by averaging left and right 0 points from both polynomials to get the center of a lane and then comparing that to center of the image. 
+The function transforms pixel to meters using `30/720` for y dimension and `3.7/600` for x. Using the new points it fits a polynomial and uses the A, B, and C values to calculate left and right radius of curvature. The offset is calculated by averaging left and right 0 points from both polynomials to get the center of a lane and then comparing that to center of the image. 10 last computed radius and offset is stored in `curvatures` and `offsets`.
 
 #### 6. Warp the detected lane boundaries back onto the original image.
 
@@ -126,7 +128,7 @@ Unwarped image with lane marked:
 
 The code for this step is contained in the seventh code cell of the IPython notebook located in "CarND-Advanced-Lane-Lines.ipynb" in function `detect_lines` which is the main pipeline function in line.
 
-The function `cv2.addWeighted` applies detected and unwarped `lanes` image prepared during step 6 on the undistorted original image. Offset and curvature calculated in step 5 are displayed on the image using `cv2.putText`.
+The function `cv2.addWeighted` applies detected and unwarped `lanes` image prepared during step 6 on the undistorted original image. Mean of last computed offsets and curvatures calculated in step 5 are displayed on the image using `cv2.putText`.
 
 Undistorted image:
 
@@ -144,11 +146,17 @@ Output image with lane boundaries and curvature/posision:
 
 ### Discussion
 
-#### 1. Low contrast between lane boundary and the road
+#### 1. Low contrast between lane boundary and the road (fixed)
 
-The current approach does not work well with low contrast scenarios between the road yellow marking and the road iself. The major reason for it is that I am trying to recalculate the lane position for each frame and not used saved values from previous frames to stabilize the image.
+~~The current approach does not work well with low contrast scenarios between the road yellow marking and the road iself. The major reason for it is that I am trying to recalculate the lane position for each frame and not used saved values from previous frames to stabilize the image.~~
+
+Old image:
 
 <img src="./output_images/road_contrast.png" alt="Road/lane contrast" width="640"/>
+
+Fixed version:
+
+<img src="./output_images/road_contrast_fixed.png" alt="Road/lane contrast fixed" width="640"/>
 
 #### 2. Multicolored road
 
